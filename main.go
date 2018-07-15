@@ -17,6 +17,7 @@ const Version = "0.2.1"
 var options struct {
 	origin       string
 	printVersion bool
+	multiline    bool
 }
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	}
 	rootCmd.Flags().StringVarP(&options.origin, "origin", "o", "", "websocket origin")
 	rootCmd.Flags().BoolVarP(&options.printVersion, "version", "v", false, "print version")
+	rootCmd.Flags().BoolVarP(&options.multiline, "multiline", "m", false, "multiline input")
 
 	rootCmd.Execute()
 }
@@ -71,8 +73,8 @@ func root(cmd *cobra.Command, args []string) {
 		Prompt:      "> ",
 		HistoryFile: historyFile,
 	})
-	if err != nil && err != io.EOF && err != readline.ErrInterrupt {
+	if err != nil && err != io.EOF {
 		fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
+		os.Exit(1)
 	}
+}

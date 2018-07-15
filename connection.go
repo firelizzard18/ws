@@ -25,6 +25,7 @@ func connect(url, origin string, rlConf *readline.Config) error {
 	if err != nil {
 		return err
 	}
+	defer ws.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 
 	rl, err := readline.NewEx(rlConf)
 	if err != nil {
@@ -44,12 +45,45 @@ func connect(url, origin string, rlConf *readline.Config) error {
 	return <-sess.errChan
 }
 
+func (s *session) read() (msg string, err error, ok bool) {
+	var line string
+	ok = true
+
+	if !options.multiline {
+		msg, err = s.rl.Readline()
+		goto done
+	}
+
+	for err == nil {
+		line, err = s.rl.Readline()
+		if line == "" {
+			break
+		}
+
+		msg += "\n" + line
+	}
+
+	if msg != "" {
+		msg = msg[1:]
+	}
+
+done:
+	if err == readline.ErrInterrupt {
+		err = nil
+		ok = false
+	}
+	return
+}
+
 func (s *session) readConsole() {
 	for {
-		line, err := s.rl.Readline()
+		line, err, ok := s.read()
 		if err != nil {
 			s.errChan <- err
 			return
+		}
+		if !ok {
+			continue
 		}
 
 		err = s.ws.WriteMessage(websocket.TextMessage, []byte(line))
