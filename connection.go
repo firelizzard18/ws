@@ -66,6 +66,8 @@ func bytesToFormattedHex(bytes []byte) string {
 }
 
 func (s *session) readWebsocket() {
+	defer s.ws.Close()
+
 	rxSprintf := color.New(color.FgGreen).SprintfFunc()
 
 	for {
