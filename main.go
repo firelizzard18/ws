@@ -71,10 +71,8 @@ func root(cmd *cobra.Command, args []string) {
 		Prompt:      "> ",
 		HistoryFile: historyFile,
 	})
-	if err != nil {
+	if err != nil && err != io.EOF && err != readline.ErrInterrupt {
 		fmt.Fprintln(os.Stderr, err)
-		if err != io.EOF && err != readline.ErrInterrupt {
 			os.Exit(1)
 		}
 	}
-}
